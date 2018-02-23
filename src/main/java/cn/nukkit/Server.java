@@ -604,9 +604,10 @@ public class Server {
 
         Timings.playerNetworkSendTimer.startTiming();
         for (PlayerProtocol protocol : PlayerProtocol.values()){
-            byte[][] payload = new byte[packets.length * 2][];
-            for (int i = 0; i < packets.length; i++) {
-                DataPacket p = packets[i];
+            DataPacket[] packetsProtocol = packets.clone();
+            byte[][] payload = new byte[packetsProtocol.length * 2][];
+            for (int i = 0; i < packetsProtocol.length; i++) {
+                DataPacket p = packetsProtocol[i];
                 if (!p.isEncoded) p.encode(protocol);
                 byte[] buf = p.getBuffer();
                 payload[i * 2] = Binary.writeUnsignedVarInt(buf.length);
