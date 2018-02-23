@@ -1,6 +1,7 @@
 package cn.nukkit.inventory;
 
 import cn.nukkit.item.Item;
+import cn.nukkit.network.protocol.PlayerProtocol;
 
 import java.util.*;
 
@@ -15,6 +16,8 @@ public class ShapelessRecipe implements CraftingRecipe {
     private long least,most;
 
     private final List<Item> ingredients;
+
+    private int recipeProtocol = PlayerProtocol.getNewestProtocol().getNumber();
 
     public ShapelessRecipe(Item result, Collection<Item> ingredients) {
         this.output = result.clone();
@@ -46,6 +49,46 @@ public class ShapelessRecipe implements CraftingRecipe {
     public void setId(UUID uuid) {
         this.least = uuid.getLeastSignificantBits();
         this.most = uuid.getMostSignificantBits();
+    }
+
+    @Override
+    public boolean isCompatibleWith(int protocolVersion){
+        return recipeProtocol <= protocolVersion;
+    }
+    @Override
+    public void setRecipeProtocol(int protocol){
+        this.recipeProtocol = protocol;
+    }
+
+    public ShapelessRecipe addIngredient(Item item) {
+        if (this.ingredients.size() > 9) {
+            throw new IllegalArgumentException("Shapeless recipes cannot have more than 9 ingredients");
+        }
+
+        Item it = item.clone();
+        it.setCount(1);
+
+        while (item.getCount() > 0) {
+            this.ingredients.add(it.clone());
+            item.setCount(item.getCount() - 1);
+        }
+
+        return this;
+    }
+
+    public ShapelessRecipe removeIngredient(Item item) {
+        for (Item ingredient : this.ingredients) {
+            if (item.getCount() <= 0) {
+                break;
+            }
+
+            if (ingredient.equals(item, item.hasMeta(), item.getCompoundTag() != null)) {
+                this.ingredients.remove(ingredient);
+                item.setCount(item.getCount() - 1);
+            }
+        }
+
+        return this;
     }
 
     public List<Item> getIngredientList() {

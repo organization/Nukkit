@@ -1,6 +1,7 @@
 package cn.nukkit.inventory;
 
 import cn.nukkit.item.Item;
+import cn.nukkit.network.protocol.PlayerProtocol;
 import cn.nukkit.utils.Utils;
 import io.netty.util.collection.CharObjectHashMap;
 
@@ -20,6 +21,8 @@ public class ShapedRecipe implements CraftingRecipe {
     private final String[] shape;
 
     private final CharObjectHashMap<Item> ingredients = new CharObjectHashMap<>();
+
+    private int recipeProtocol = PlayerProtocol.getNewestProtocol().getNumber();
 
     /**
      * Constructs a ShapedRecipe instance.
@@ -97,6 +100,15 @@ public class ShapedRecipe implements CraftingRecipe {
     public void setId(UUID uuid) {
         this.least = uuid.getLeastSignificantBits();
         this.most = uuid.getMostSignificantBits();
+    }
+
+    @Override
+    public boolean isCompatibleWith(int protocolVersion){
+        return recipeProtocol <= protocolVersion;
+    }
+    @Override
+    public void setRecipeProtocol(int protocol){
+        this.recipeProtocol = protocol;
     }
 
     public ShapedRecipe setIngredient(String key, Item item) {
