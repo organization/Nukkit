@@ -3348,7 +3348,11 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
                         break;
                     }
 
-                    Recipe recipe = this.server.getCraftingManager().getRecipe(craftingEventPacket.id);
+
+                    Recipe recipe = this.server.getCraftingManager().getRecipes().stream().filter(recpxx -> {
+                        return recpxx instanceof CraftingRecipe &&
+                                ((CraftingRecipe) recpxx).getId().equals(craftingEventPacket.id); })
+                            .findAny().get();
 
                     if (this.craftingType == CRAFTING_ANVIL) {
                         Inventory inv = this.windowIndex.get(craftingEventPacket.windowId);
@@ -3409,7 +3413,10 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
                     boolean canCraft = true;
 
                     if (craftingEventPacket.input.length == 0) {
-                        Recipe[] recipes = getServer().getCraftingManager().getRecipesByResult(craftingEventPacket.output);
+                        Recipe[] recipes = getServer().getCraftingManager().getRecipes().stream().filter(recpxx -> {
+                            return recpxx instanceof CraftingRecipe &&
+                                    ((CraftingRecipe) recpxx).getResult().equals(craftingEventPacket.output);
+                        }).toArray(Recipe[]::new);
 
                         recipe = null;
 
